@@ -62,6 +62,6 @@ public final class Question {
              return false;
          }
          Question q = (Question) o;
-         return this.getAnswer() == q.getAnswer();
+         return this.getAnswer().equals(q.getAnswer());
      }
 }
