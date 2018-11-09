@@ -1,5 +1,3 @@
-package main;
-
 import java.net.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,102 +13,116 @@ public class Bot {
 			"/help - показать эту справку";
 	private Map<String, Quiz> quizes;
 	
-	public Bot() {
+	public Bot()
+	{
 		quizes = new HashMap<String, Quiz>();
 	}
 	
-	public void sendMessage(String chatID, String message) {
+	public void SendMessage(String chatID, String message)
+	{
 		Map<String, String> args = new HashMap<String, String>();
 		args.put("chat_id", chatID);
 		args.put("text", message);
 		URLRequest("sendMessage", args);
 	}
 	
-	public void startQuiz(String userID) {
+	public void StartQuiz(String userID)
+	{
 		quizes.put(userID, new Quiz());
-		sendNewQuestion(userID);
+		SendNewQuestion(userID);
 	}
 	
-	public void sendNewQuestion(String userID) {
-		sendMessage(userID, quizes.get(userID).getCurrQuest());
+	public void SendNewQuestion(String userID)
+	{
+		SendMessage(userID, quizes.get(userID).getCurrQuest());
 	}
 	
-	public void processMessage(String message, String userID) {
-		switch(message) {
+	public void ProcessMessage(String message, String userID)
+	{
+		switch(message)
+		{
 			case "/showscore":
-				if (quizes.containsKey(userID)) {
-					sendMessage(userID, "Ваши очки: " + Integer.toString(quizes.get(userID).getScore()));
-				} else {
-					sendMessage(userID, "Вы еще не участвовали в викторине");
-				}
+				if (quizes.containsKey(userID))
+					SendMessage(userID, "Ваши очки: " + Integer.toString(quizes.get(userID).getScore()));
+				else
+					SendMessage(userID, "Вы еще не участвовали в викторине");
 				break;
 			case "/start":
-				sendMessage(userID, HELLOMESSAGE);
+				SendMessage(userID, HELLOMESSAGE);
 				break;
 			case "/help":
-				sendMessage(userID, HELPMESSAGE);
+				SendMessage(userID, HELPMESSAGE);
 				break;
 			case "/startquiz":
-				sendMessage(userID, "Начнём!");
-				startQuiz(userID);
+				SendMessage(userID, "Начнём!");
+				StartQuiz(userID);
 				break;
 			default:
-				if (quizes.containsKey(userID) && !quizes.get(userID).isEnd()) {
-					String userAnswer = decodeString(message);
+				if (quizes.containsKey(userID) && !quizes.get(userID).isEnd())
+				{
+					String userAnswer = DecodeString(message);
 					String answer = quizes.get(userID).getAnswer();
-					if (quizes.get(userID).checkAnswer(userAnswer)) {
-						sendMessage(userID, "Правильно!");
-					} else {
-						sendMessage(userID, "К сожалению, вы ошиблись\nПравильный ответ: " + answer);
-					}
-					if (!quizes.get(userID).isEnd()) {
-						sendNewQuestion(userID);
-					} else {
-						sendMessage(userID, "Викторина окончена.\nНабранные очки: " +
-						            Integer.toString(quizes.get(userID).getScore()));
-					}
-				} else {
-					sendMessage(userID, HELPMESSAGE);
+					if (quizes.get(userID).CheckAnswer(userAnswer))
+						SendMessage(userID, "Правильно!");
+					else
+						SendMessage(userID, "К сожалению, вы ошиблись\nПравильный ответ: " + answer);
+					if (!quizes.get(userID).isEnd())
+						SendNewQuestion(userID);
+					else
+						SendMessage(userID, "Викторина окончена.\nНабранные очки: " + Integer.toString(quizes.get(userID).getScore()));
+				}
+				else 
+				{
+					SendMessage(userID, HELPMESSAGE);
 				}
 				break;
 		}
 	}
 	
-	public String getUpdates(String offset)	{
+	public String GetUpdates(String offset)
+	{
 		Map<String, String> args = new HashMap<String, String>();
 		args.put("offset", offset);
 		return URLRequest("getUpdates", args);
 	}
 	
-	public String decodeString(String s) {
+	public String DecodeString(String s)
+	{
 		StringBuilder res = new StringBuilder();
 		s = s.replace("\\", "");
 		String[] arr = s.split("u");
 		String symbs = "";
-		for(int i = 1; i < arr.length; i++)	{
-			if(arr[i].length() >= 5) {
+		for(int i = 1; i < arr.length; i++)
+		{
+			if(arr[i].length() >= 5)
+			{
 				symbs = arr[i].substring(4, arr[i].length());
 				arr[i] = arr[i].substring(0, 4);
-			} else {
+			}
+			else
+			{
 				symbs = "";
 			}
 			int hexVal = Integer.parseInt(arr[i], 16);
 			res.append((char)hexVal);
-			if (symbs != "") {
+			if (symbs != "")
 				res.append(symbs);
-			}
 		}
 		return res.toString();
 	}
 	
-	public String URLRequest(String methodName, Map<String, String> args) {
+	public String URLRequest(String methodName, Map<String, String> args)
+	{
 		StringBuilder s_url = new StringBuilder();
 		s_url.append(TOKEN);
 		s_url.append(methodName);
-		try {
-			if (args != null) {
+		try 
+		{
+			if (args != null)
+			{
 				s_url.append("?");
-				for (String key: args.keySet())	{
+				for (String key: args.keySet())
+				{
 					s_url.append(key);
 					s_url.append("=" + URLEncoder.encode(args.get(key), "UTF-8") + "&");
 				}
@@ -123,15 +135,19 @@ public class Bot {
 			String inputLine;
 			StringBuilder response = new StringBuilder();
 
-			while ((inputLine = in.readLine()) != null) {
+			while ((inputLine = in.readLine()) != null) 
+			{
 				response.append(inputLine);
 			}
 			in.close();
 
 			return response.toString();
-		} catch (IOException e) {
+		}
+		catch (IOException e)
+		{
 			e.printStackTrace();
 		}
 		return null;
 	}
+
 }
