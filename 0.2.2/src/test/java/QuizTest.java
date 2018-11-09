@@ -2,10 +2,11 @@ package test.java;
 
 import main.Quiz;
 import main.Question;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import org.junit.*;
 import java.util.*;
+
+
+import org.junit.*;
+import static org.junit.Assert.*;
 
 
 public class QuizTest
