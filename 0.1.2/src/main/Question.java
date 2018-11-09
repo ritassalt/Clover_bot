@@ -7,19 +7,12 @@ public final class Question {
 	private String question;
 	private String[] answers;
 	private String rightAnswer;
-	private String rightAnswerNumber;
 	
 	public Question(String line) {
 		String[] questWithAnswers = line.split("#");
 		question = questWithAnswers[0];
-		rightAnswer = questWithAnswers[2];
 		answers = shuffleAnswers(questWithAnswers[1]);
-		for (int i = 0; i < answers.length; i++) {            
-	        if (answers[i].equals(rightAnswer)) {
-	          	rightAnswerNumber = Integer.toString(i + 1);
-	          	break;
-	        }            
-	    }
+		rightAnswer = questWithAnswers[2];
 	}
 	
 	public static String[] shuffleAnswers(String answer) {
@@ -30,14 +23,13 @@ public final class Question {
             String temp = answers[i];
             answers[i] = answers[j];
             answers[j] = temp;
-        }       
+        }
         return answers;
 	}
 	
 	public String getAnswer() {
 		return rightAnswer;
 	}
-	
 	
 	public String getCurrQuest() {
 		StringBuilder questWithAnswers = new StringBuilder();
@@ -46,11 +38,6 @@ public final class Question {
 			questWithAnswers.append("\n" + answers[i]);
 		}
 		return questWithAnswers.toString();
-	}
-	
-	public boolean checkAnswer(String answer) {
-		return rightAnswerNumber.equals(answer) ||
-				answer.toLowerCase().equals(rightAnswer.toLowerCase()) ;
 	}
 	
 	 @Override

@@ -23,17 +23,11 @@ public class Main
 		Map<String, String> res = new HashMap<String, String>();
 		String[] data_string = data.split("\"update_id\":");
 		data_string[0] = "";
-		Pattern userNameP = Pattern.compile("username\\\":\\\"(.+?)\\\",\\\"");
 		Pattern p = Pattern.compile("(\\d+?),.+\\\"from\\\":\\{\\\"id\\\":(\\d+),.+text\\\":\\\"(.+?)\\\"[,}]");
 		for (String s: data_string) {
-			Matcher userNameM = userNameP.matcher(s);
 			Matcher m = p.matcher(s);
 			if (m.find()) {
-				if (userNameM.find()) {
-				    res.put(m.group(2) + ":" + userNameM.group(1), m.group(3));
-				} else {
-					res.put(m.group(2), m.group(3));
-				}
+				res.put(m.group(2), m.group(3));
 				Offset = String.valueOf(Integer.parseInt(m.group(1)) + 1);
 			}
 		}

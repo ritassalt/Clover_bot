@@ -10,39 +10,25 @@ import java.util.Random;
 
 public class Quiz
 {
-	protected int score;
-	protected static List<Question> questions = makeQuestions();
-	protected Question[] quiz;
-	protected int currNumbQuest;
-	protected int length;
-	protected int earnedScore = 10;
-	protected boolean isEnd = false;
+	private int score;
+	private static List<Question> questions = makeQuestions();
+	private Question[] quiz;
+	private int currNumbQuest;
+	private boolean isEnd = false;
 
-	public Quiz(int len) {
-		length = len;
+	public Quiz() {
 		quiz = makeQuiz();
 		currNumbQuest = 0;
 	}
 	
-	private static List<Question> makeQuestions() {
-		if (questions != null) {
-			return questions;
-		}
-		List<Question> temp = new ArrayList<Question>();
-		try {
-			for (String line : Files.readAllLines(Paths.get("src\\questions.txt"), StandardCharsets.UTF_8)) {
-				temp.add(new Question(line));
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return temp;
+	public String getCurrQuest() {
+		return Integer.toString(currNumbQuest + 1) + ". " + quiz[currNumbQuest].getCurrQuest();
 	}
 	
 	public Question[] makeQuiz() {
 		Random rnd = new Random();
-		quiz = new Question[length];
-		for (int i = 0; i < length; i++) {
+		quiz = new Question[12];
+		for (int i = 0; i < quiz.length; i++) {
 			while (quiz[i] == null) {				
 				int number = rnd.nextInt(questions.size());
 				boolean exist = false;
@@ -61,12 +47,12 @@ public class Quiz
 	}
 	
 	public boolean checkAnswer(String answ) {
-		boolean right = quiz[currNumbQuest].checkAnswer(answ);
+		boolean right = answ.toLowerCase().equals(quiz[currNumbQuest].getAnswer().toLowerCase());
 		if (right) {
-			score += earnedScore;
+			score += 10;
 		}
 		nextQuestion();
-		if (currNumbQuest >= length) {
+		if (currNumbQuest >= 12) {
 			isEnd = true;
 		}
 		return right;		
@@ -74,10 +60,6 @@ public class Quiz
 	
 	private void nextQuestion() {
 		currNumbQuest += 1;
-	}
-	
-	public String getCurrQuest() {
-		return Integer.toString(currNumbQuest + 1) + ". " + quiz[currNumbQuest].getCurrQuest();
 	}
 	
 	public int getScore() {
@@ -90,5 +72,20 @@ public class Quiz
 	
 	public boolean isEnd() {
 		return isEnd;
+	}
+	
+	private static List<Question> makeQuestions() {
+		if (questions != null) {
+			return questions;
+		}
+		List<Question> temp = new ArrayList<Question>();
+		try {
+			for (String line : Files.readAllLines(Paths.get("src\\questions.txt"), StandardCharsets.UTF_8)) {
+				temp.add(new Question(line));
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return temp;
 	}
 }
