@@ -19,11 +19,11 @@ public class Duel extends Quiz {
 	}
 
 	public boolean checkAnswer(String answ, String userID) {
+		isReady.put(userID, true);
 		boolean right = quiz[currNumbQuest].checkAnswer(answ);
-		if (right && !isReady.get(userID)) {
+		if (right) {
 			scores.put(userID, scores.get(userID) + earnedScore);
 		}
-		isReady.put(userID, true);
 		nextQuestion();
 		if (currNumbQuest >= length && getIsReady()) {
 			isEnd = true;
@@ -47,10 +47,6 @@ public class Duel extends Quiz {
 			}
 		}
 		return true;
-	}
-
-	public boolean getIsReady(String userID) {
-		return isReady.get(userID);
 	}
 	
 	public void reset() {

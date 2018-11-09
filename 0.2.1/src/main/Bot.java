@@ -12,9 +12,8 @@ public class Bot {
 	static final String HELLOMESSAGE = "Привет! Я - бот, который поможет тебе выигрывать в викторине \"Клевер\". Чтобы познакомиться с тем, что я умею, вызови команду /help";
 	static final String HELPMESSAGE = "/startquiz - начать викторину с 12 вопросами и 4 вариантами ответа на каждый, за верный ответ начисляются 10 очков \r\n" + 
 			"/showscore - показать набранные очки за прошлую или текущую игру\r\n" + 
-			"/start - показать приветственное сообщение\r\n" + 
-			"/help - показать эту справку\r\n" +
-			"/duel username - начать дуэль с пользователем @username";
+			"/start - показать приветственное сообщение \r\n" + 
+			"/help - показать эту справку";
 	private Map<String, Quiz> quizes;
 	private DataBase base = new DataBase();
 	
@@ -40,22 +39,12 @@ public class Bot {
 			sendMessage(userID1, "Пользователь не найден");
 			return;
 		}
-		if (userID1.equals(userID2)) {
-			sendMessage(userID1, "Невозможно вызвать на дуэль самого себя");
-			return;
-		}
 		if (isNotActive(userID1) && isNotActive(userID2)) {
 		    Duel duel = new Duel(12, userID1, userID2);
 		    quizes.put(userID1, duel);
 		    quizes.put(userID2, duel);
 		    sendNewQuestion(userID1);
 		    sendNewQuestion(userID2);
-		} else {
-			if (!isNotActive(userID1)) {
-				sendMessage(userID1, "Викторина уже идёт");
-			} else if (!isNotActive(userID2)) {
-				sendMessage(userID1, "Пользователь в данный момент участвует в викторине");
-			}
 		}
 	}
 	
@@ -69,14 +58,12 @@ public class Bot {
 		String command[] = message.split(" ");
 		switch(command[0]) {
 			case "/showscore":
-				if (quizes.containsKey(userID) && !quizes.get(userID).isEnd()) {
+				if (quizes.containsKey(userID)) {
 					if (quizes.get(userID) instanceof Duel) {
-						sendMessage(userID, "Ваши очки: " + Integer.toString(((Duel)quizes.get(userID)).getScore(userID) + base.getScore(userID)));
+						sendMessage(userID, "Ваши очки: " + Integer.toString(((Duel)quizes.get(userID)).getScore(userID)));
 					} else {
-						sendMessage(userID, "Ваши очки: " + Integer.toString(quizes.get(userID).getScore() + base.getScore(userID)));
+						sendMessage(userID, "Ваши очки: " + Integer.toString(quizes.get(userID).getScore()));
 					}
-				} else if (base.contains(userID)) {
-					sendMessage(userID, "Ваши очки: " + Integer.toString(base.getScore(userID)));
 				} else {
 					sendMessage(userID, "Вы еще не участвовали в викторине");
 				}
@@ -103,13 +90,11 @@ public class Bot {
 					String userAnswer = decodeString(message);
 					processAnswer(userAnswer, userID);
 					if (quizes.get(userID).isEnd()) {
+						base.addScores(userID, quizes.get(userID).getScore());
 						if (quizes.get(userID) instanceof Duel) {
 							Duel duel = (Duel) quizes.get(userID);
 							String opponent = duel.getOpponent(userID);
 							base.addScores(opponent, duel.getScore(opponent));
-							base.addScores(userID, duel.getScore(userID));
-						} else {
-							base.addScores(userID, quizes.get(userID).getScore());
 						}
 						base.Save();
 					}
@@ -121,7 +106,7 @@ public class Bot {
 	}
 	
 	private boolean isNotActive(String userID) {
-		return !quizes.containsKey(userID) || quizes.get(userID).isEnd;
+		return (quizes.containsKey(userID) && quizes.get(userID).isEnd) || !quizes.containsKey(userID);
 	}
 	
 	private void processData(String userData) {
@@ -142,12 +127,10 @@ public class Bot {
 		} else {
 			right = quiz.checkAnswer(answ);
 		}
-		if (!(quiz instanceof Duel) || !((Duel) quiz).getIsReady(userID)) {
-			if (right) {
-				sendMessage(userID, "Правильно!");
-			} else {
-				sendMessage(userID, "К сожалению, вы ошиблись\nПравильный ответ: " + answer);
-			}
+		if (right) {
+			sendMessage(userID, "Правильно!");
+		} else {
+			sendMessage(userID, "К сожалению, вы ошиблись\nПравильный ответ: " + answer);
 		}
 		if (!quiz.isEnd()) {
 			if (quiz instanceof Duel && ((Duel)quiz).getIsReady()) {
@@ -157,7 +140,7 @@ public class Bot {
 				((Duel)quiz).reset();
 			} else if (quiz instanceof Duel) {
 				sendMessage(userID, "Ожидаем ответа противника...");
-			} else  {
+			} else if (!(quiz instanceof Duel)) {
 				sendNewQuestion(userID);
 			}
 		} else {
@@ -210,7 +193,7 @@ public class Bot {
 			}
 			int hexVal = Integer.parseInt(arr[i], 16);
 			res.append((char)hexVal);
-			if (!symbs.equals("")) {
+			if (symbs != "") {
 				res.append(symbs);
 			}
 		}

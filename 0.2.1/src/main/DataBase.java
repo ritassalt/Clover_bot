@@ -21,10 +21,8 @@ public class DataBase {
 			e.printStackTrace();
 		}
 		for (String line: lines) {
-				if (!line.equals("")) {
-					String[] words = line.split(":");
-					usersData.put(words[0], new UserDataObject(words[0], words[1], Integer.parseInt(words[2])));
-			}
+			String[] words = line.split(":");
+			usersData.put(words[0], new UserDataObject(words[0], words[1], Integer.parseInt(words[2])));
 		}
 	}
 	
@@ -58,23 +56,22 @@ public class DataBase {
 	public void Save() {
 		try (FileWriter writer = new FileWriter("src\\data.txt", false)) {
 			for (UserDataObject line : usersData.values()) {
-				writer.write(line.getUserID() + ':' + line.getUsername() + ':' + 
-						Integer.toString(line.getScores()) + '\n');
+				writer.write(line.getUserID() + ':' + line.getUsername() + ':' + line.getScores());
+				writer.append('\n');
+				writer.flush();
 			}			
         } catch (IOException ex) {             
             System.out.println(ex.getMessage());
         }			
 	}
 	public void Save(String userID) {
-		try (FileWriter writer = new FileWriter("src\\data.txt", true)) {
-			writer.write(userID + ":" + usersData.get(userID).getUsername() + ":" +
-					Integer.toString(usersData.get(userID).getScores()) + "\n");
+		try (FileWriter writer = new FileWriter("src\\data.txt", false)) {
+			writer.write(userID + ':' + usersData.get(userID).getUsername() + ':' +
+					usersData.get(userID).getScores());
+			writer.append('\n');
+			writer.flush();
         } catch (IOException ex) {             
             System.out.println(ex.getMessage());
         }			
-	}
-	
-	public int getScore(String userID) {
-		return usersData.get(userID).getScores();
 	}
 }
