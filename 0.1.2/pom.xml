@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>Clover_bot</groupId>
   <artifactId>Clover_bot</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.1.2-RELEASE</version>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
