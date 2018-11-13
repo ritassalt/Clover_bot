@@ -25,9 +25,6 @@ public class Quiz
 	}
 	
 	private static List<Question> makeQuestions() {
-		if (questions != null) {
-			return questions;
-		}
 		List<Question> temp = new ArrayList<Question>();
 		try {
 			for (String line : Files.readAllLines(Paths.get("src\\questions.txt"), StandardCharsets.UTF_8)) {

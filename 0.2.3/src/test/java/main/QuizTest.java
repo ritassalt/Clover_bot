@@ -1,30 +1,28 @@
-package test.java;
+package main;
 
-import main.Quiz;
-import main.Question;
-import java.util.*;
+import java.util.Arrays;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 
-import org.junit.*;
-import static org.junit.Assert.*;
-
-
-public class QuizTest
-{	
+public class QuizTest {
 	private Quiz quiz = null;
-	@Before
+	@BeforeEach
     public void init() { quiz = new Quiz(12); }
-    @After
+    @AfterEach
     public void tearDown() { quiz = null; }
-    
+
 	@Test
-	public void testMakeQuiz1() throws Exception {
+	public void testMakeQuiz1() {
 		Question[] questions = quiz.makeQuiz();
-		assertTrue(questions.length == 12);
+        assertEquals(12, questions.length);
 	}
 	
 	@Test
-	public void testMakeQuiz2() throws Exception {
+	public void testMakeQuiz2() {
 		Question[] questions = quiz.makeQuiz();
 		for (Question q: questions)	{
 			assertNotNull(q);
@@ -32,13 +30,13 @@ public class QuizTest
 	}
 	
 	@Test
-	public void testScore() throws Exception {
+	public void testScore() {
 		quiz.checkAnswer(quiz.getAnswer());
-		assertTrue(quiz.getScore() == 10);
+        assertEquals(10, quiz.getScore());
 	}
 	
 	@Test
-	public void testShuffle() throws Exception {
+	public void testShuffle() {
 		String answer = "A,B,C,D";
 		String[] answers = answer.split(",");
 		int equal = 0;
@@ -52,14 +50,14 @@ public class QuizTest
 	}
 	
 	@Test
-	public void testNextQuestion() throws Exception {
+	public void testNextQuestion() {
 		String question = quiz.getCurrQuest();
 		quiz.checkAnswer("a");
-		assertTrue(question != quiz.getCurrQuest());
+        assertNotEquals(question, quiz.getCurrQuest());
 	}
 	
 	@Test
-	public void testIsEnd() throws Exception {
+	public void testIsEnd() {
 		for (int i = 0; i < 12; i++) {
 			quiz.checkAnswer("a");
 		}
@@ -67,7 +65,7 @@ public class QuizTest
 	}
 	
 	@Test
-	public void TestCheckAnswer() throws Exception {
+	public void TestCheckAnswer() {
 		String answer = quiz.getAnswer();
 		assertTrue(quiz.checkAnswer(answer));
 	}

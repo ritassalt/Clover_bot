@@ -12,11 +12,13 @@ import java.util.Map;
 public class DataBase {
 	
 	private Map<String, UserDataObject> usersData = new HashMap<String, UserDataObject>();
+	private String path;
 
-	public DataBase() {
+	public DataBase(String basePath) {
+		path = basePath;
 		List<String> lines = null;
 		try {
-			lines = Files.readAllLines(Paths.get("src\\data.txt"), StandardCharsets.UTF_8);
+			lines = Files.readAllLines(Paths.get("src\\" + path), StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -33,7 +35,7 @@ public class DataBase {
 		    usersData.put(data[0], new UserDataObject(data[0], data[1], 0));
 		    Save(data[0]);
 		} else if (data.length == 1) {
-		    usersData.put(data[0], new UserDataObject(data[0], null, 0));
+		    usersData.put(data[0], new UserDataObject(data[0], "", 0));
 		    Save(data[0]);
 		}
 	}
@@ -50,13 +52,17 @@ public class DataBase {
 		}
 		return null;
 	}
+
+	public String getUsername(String userID) {
+		return usersData.get(userID).getUsername();
+	}
 	
 	public void addScores(String userID, int score) {
 		usersData.get(userID).addScore(score);
 	}
 	
 	public void Save() {
-		try (FileWriter writer = new FileWriter("src\\data.txt", false)) {
+		try (FileWriter writer = new FileWriter("src\\" + path, false)) {
 			for (UserDataObject line : usersData.values()) {
 				writer.write(line.getUserID() + ':' + line.getUsername() + ':' + 
 						Integer.toString(line.getScores()) + '\n');
@@ -66,7 +72,7 @@ public class DataBase {
         }			
 	}
 	public void Save(String userID) {
-		try (FileWriter writer = new FileWriter("src\\data.txt", true)) {
+		try (FileWriter writer = new FileWriter("src\\" + path, true)) {
 			writer.write(userID + ":" + usersData.get(userID).getUsername() + ":" +
 					Integer.toString(usersData.get(userID).getScores()) + "\n");
         } catch (IOException ex) {             

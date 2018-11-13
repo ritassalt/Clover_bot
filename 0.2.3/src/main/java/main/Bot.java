@@ -7,34 +7,44 @@ import java.util.Map;
 
 
 public class Bot {
-	
-	static final String TOKEN = "https://api.telegram.org/bot643714257:AAEdIQpa1AOF8ZLeGblfbyFtzr06moeGjqo/";
+
+	static String token;
 	static final String HELLOMESSAGE = "Привет! Я - бот, который поможет тебе выигрывать в викторине \"Клевер\". Чтобы познакомиться с тем, что я умею, вызови команду /help";
-	static final String HELPMESSAGE = "/startquiz - начать викторину с 12 вопросами и 4 вариантами ответа на каждый, за верный ответ начисляются 10 очков \r\n" + 
-			"/showscore - показать набранные очки за прошлую или текущую игру\r\n" + 
-			"/start - показать приветственное сообщение\r\n" + 
+	static final String HELPMESSAGE = "/startquiz - начать викторину с 12 вопросами и 4 вариантами ответа на каждый, за верный ответ начисляются 10 очков \r\n" +
+			"/showscore - показать набранные очки за прошлую или текущую игру\r\n" +
+			"/start - показать приветственное сообщение\r\n" +
 			"/help - показать эту справку\r\n" +
 			"/duel username - начать дуэль с пользователем @username";
 	private Map<String, Quiz> quizes;
-	private DataBase base = new DataBase();
-	
+	private DataBase base = new DataBase("data.txt");
+
 	public Bot() {
-		quizes = new HashMap<String, Quiz>();
+	    try {
+            File file = new File("src\\token.txt");
+            FileInputStream fis = new FileInputStream(file);
+            byte[] data = new byte[(int) file.length()];
+            fis.read(data);
+            fis.close();
+            token = new String(data, "UTF-8");
+        } catch (IOException e) {
+	        e.printStackTrace();
+        }
+        quizes = new HashMap<String, Quiz>();
 	}
-	
+
 	public void sendMessage(String chatID, String message) {
 		Map<String, String> args = new HashMap<String, String>();
 		args.put("chat_id", chatID);
 		args.put("text", message);
 		URLRequest("sendMessage", args);
 	}
-	
+
 	public void startQuiz(String userID) {
 		quizes.put(userID, new Quiz(12));
 		sendNewQuestion(userID);
 	}
-	
-	public void startDuel(String userID1, String userName2) {
+
+	public void inviteOnDuel(String userID1, String userName2) {
 		String userID2 = base.find(userName2);
 		if (userID2 == null) {
 			sendMessage(userID1, "Пользователь не найден");
@@ -45,11 +55,16 @@ public class Bot {
 			return;
 		}
 		if (isNotActive(userID1) && isNotActive(userID2)) {
-		    Duel duel = new Duel(12, userID1, userID2);
-		    quizes.put(userID1, duel);
-		    quizes.put(userID2, duel);
-		    sendNewQuestion(userID1);
-		    sendNewQuestion(userID2);
+			Duel duel = new Duel(12, userID1, userID2);
+			quizes.put(userID1, duel);
+			quizes.put(userID2, duel);
+			String userName1;
+			if (base.getUsername(userID1).equals("")) {
+                userName1 = "пользователь, у которого нет username";
+            } else{
+                userName1 = "@" + base.getUsername(userID1);
+            }
+			sendMessage(userID2, "Вас вызвал на дуэль " + userName1 + ". Принять вызов?");
 		} else {
 			if (!isNotActive(userID1)) {
 				sendMessage(userID1, "Викторина уже идёт");
@@ -58,11 +73,47 @@ public class Bot {
 			}
 		}
 	}
-	
+
+	private void acceptInviteOnDuel(String userID) {
+        if (checkDuelIsPossible(userID)) {
+            Duel duel = (Duel)quizes.get(userID);
+            if (!(userID.equals(duel.getInviter()))) {
+                duel.accept();
+                sendMessage(duel.getOpponent(userID), "Ваша дуэль была принята");
+                sendNewQuestion(userID);
+                sendNewQuestion(duel.getOpponent(userID));
+            }
+        }
+    }
+
+    private void declineInviteOnDuel(String userID) {
+        if (checkDuelIsPossible(userID)) {
+            Duel duel = (Duel)quizes.get(userID);
+            String opponentID = duel.getOpponent(userID);
+            quizes.remove(userID);
+            quizes.remove(opponentID);
+            sendMessage(userID, "Вызов отменен");
+            sendMessage(opponentID, "Вызов отменен");
+        }
+    }
+
+    private boolean checkDuelIsPossible(String userID) {
+        if (!(quizes.get(userID) instanceof Duel)) {
+            sendMessage(userID, "Вас не вызывали на дуэль");
+            return false;
+        }
+        Duel duel = (Duel)quizes.get(userID);
+        if (duel.isAccepted()) {
+            sendMessage(userID, "Дуэль уже идёт");
+            return false;
+        }
+        return true;
+    }
+
 	public void sendNewQuestion(String userID) {
-			sendMessage(userID, quizes.get(userID).getCurrQuest());
+		sendMessage(userID, quizes.get(userID).getCurrQuest());
 	}
-	
+
 	public void processMessage(String message, String userData) {
 		processData(userData);
 		String userID = userData.split(":")[0];
@@ -95,8 +146,14 @@ public class Bot {
 					sendMessage(userID, "Викторина уже идет");
 				}
 				break;
+            case "/yes":
+                acceptInviteOnDuel(userID);
+                break;
+            case "/no":
+                declineInviteOnDuel(userID);
+                break;
 			case "/duel":
-				startDuel(userID, command[1]);
+				inviteOnDuel(userID, command[1]);
 				break;
 			default:
 				if (quizes.containsKey(userID) && !quizes.get(userID).isEnd()) {
@@ -119,11 +176,11 @@ public class Bot {
 				break;
 		}
 	}
-	
+
 	private boolean isNotActive(String userID) {
 		return !quizes.containsKey(userID) || quizes.get(userID).isEnd;
 	}
-	
+
 	private void processData(String userData) {
 		String[] data = userData.split(":");
 		if (base.contains(data[0])) {
@@ -132,32 +189,35 @@ public class Bot {
 			base.addNewUser(data);
 		}
 	}
-	
+
 	private void processAnswer(String answ, String userID) {
 		Quiz quiz = quizes.get(userID);
 		String answer = quiz.getAnswer();
 		boolean right = false;
 		if (quiz instanceof Duel) {
-			right = ((Duel) quiz).checkAnswer(answ, userID);
-		} else {
+			if (!((Duel)quiz).isReady(userID) && ((Duel)quiz).isAccepted()) {
+                right = ((Duel) quiz).checkAnswer(answ, userID);
+                sendResult(right, userID, answer);
+            } else if (!((Duel)quiz).isAccepted()) {
+			    if (userID.equals(((Duel)quiz).getInviter())) {
+                    sendMessage(userID, "Ждём решения противника...");
+                } else {
+                    sendMessage(userID, "Примите или отклоните вызов на дуэль командой /yes или /no");
+                }
+            }
+        } else {
 			right = quiz.checkAnswer(answ);
-		}
-		if (!(quiz instanceof Duel) || !((Duel) quiz).getIsReady(userID)) {
-			if (right) {
-				sendMessage(userID, "Правильно!");
-			} else {
-				sendMessage(userID, "К сожалению, вы ошиблись\nПравильный ответ: " + answer);
-			}
+            sendResult(right, userID, answer);
 		}
 		if (!quiz.isEnd()) {
-			if (quiz instanceof Duel && ((Duel)quiz).getIsReady()) {
+			if (quiz instanceof Duel && ((Duel)quiz).isReady()) {
 				String opponentID = ((Duel)quiz).getOpponent(userID);
 				sendNewQuestion(userID);
 				sendNewQuestion(opponentID);
 				((Duel)quiz).reset();
-			} else if (quiz instanceof Duel) {
+			} else if (quiz instanceof Duel && ((Duel)quiz).isAccepted()) {
 				sendMessage(userID, "Ожидаем ответа противника...");
-			} else  {
+			} else if (!(quiz instanceof Duel)) {
 				sendNewQuestion(userID);
 			}
 		} else {
@@ -181,18 +241,27 @@ public class Bot {
 				sendMessage(opponentID, "Ваши очки: " + Integer.toString(score2) +
 						"\nОчки оппонента: " + Integer.toString(score1));
 			} else {
-			    sendMessage(userID, "Викторина окончена.\nНабранные очки: " +
-			                Integer.toString(quiz.getScore()));
+				sendMessage(userID, "Викторина окончена.\nНабранные очки: " +
+						Integer.toString(quiz.getScore()));
 			}
 		}
 	}
-	
-	public String getUpdates(String offset)	{
+
+	public String getUpdates(String offset) {
 		Map<String, String> args = new HashMap<String, String>();
 		args.put("offset", offset);
 		return URLRequest("getUpdates", args);
 	}
-	
+
+	public void sendResult(boolean right, String userID, String answer) {
+        if (right) {
+            sendMessage(userID, "Правильно!");
+        } else {
+            sendMessage(userID, "К сожалению, вы ошиблись");
+            sendMessage(userID, "Правильный ответ: " + answer);
+        }
+    }
+
 	public String decodeString(String s) {
 		if (!s.contains("\\")) {
 			return s;
@@ -216,10 +285,10 @@ public class Bot {
 		}
 		return res.toString();
 	}
-	
+
 	public String URLRequest(String methodName, Map<String, String> args) {
 		StringBuilder s_url = new StringBuilder();
-		s_url.append(TOKEN);
+		s_url.append(token);
 		s_url.append(methodName);
 		try {
 			if (args != null) {
