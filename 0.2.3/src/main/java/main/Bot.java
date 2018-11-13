@@ -195,7 +195,7 @@ public class Bot {
 		String answer = quiz.getAnswer();
 		boolean right = false;
 		if (quiz instanceof Duel) {
-			if (!((Duel)quiz).getIsReady(userID) && ((Duel)quiz).isAccepted()) {
+			if (!((Duel)quiz).isReady(userID) && ((Duel)quiz).isAccepted()) {
                 right = ((Duel) quiz).checkAnswer(answ, userID);
                 sendResult(right, userID, answer);
             } else if (!((Duel)quiz).isAccepted()) {
@@ -210,7 +210,7 @@ public class Bot {
             sendResult(right, userID, answer);
 		}
 		if (!quiz.isEnd()) {
-			if (quiz instanceof Duel && ((Duel)quiz).getIsReady()) {
+			if (quiz instanceof Duel && ((Duel)quiz).isReady()) {
 				String opponentID = ((Duel)quiz).getOpponent(userID);
 				sendNewQuestion(userID);
 				sendNewQuestion(opponentID);

@@ -15,14 +15,14 @@ public class DuelTest {
 
     @Test
     public void testReady() {
-        assertFalse(duel.getIsReady());
+        assertFalse(duel.isReady());
     }
 
     @Test
     public void testReadyAfterAnswer() {
         duel.checkAnswer("a", "123");
         duel.checkAnswer("a", "321");
-        assertTrue(duel.getIsReady());
+        assertTrue(duel.isReady());
     }
 
     @Test
@@ -39,8 +39,8 @@ public class DuelTest {
 
     @Test
     public void testGetIsReady() {
-        assertFalse(duel.getIsReady("123"));
-        assertFalse(duel.getIsReady("321"));
+        assertFalse(duel.isReady("123"));
+        assertFalse(duel.isReady("321"));
     }
 
     @Test

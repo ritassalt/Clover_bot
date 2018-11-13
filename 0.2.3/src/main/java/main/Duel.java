@@ -5,10 +5,10 @@ import java.util.Map;
 
 public class Duel extends Quiz {
 
-	private Map<String, Boolean> isReady;
+	private Map<String, Boolean> ready;
 	private Map<String, Integer> scores;
 	private String inviter;
-	private boolean isAccepted;
+	private boolean accepted;
 
 	public Duel(int len, String userID1, String userID2) {
 		super(len);
@@ -16,26 +16,26 @@ public class Duel extends Quiz {
 		scores = new HashMap<String, Integer>();
 		scores.put(userID1, 0);
 		scores.put(userID2, 0);
-		isReady = new HashMap<String, Boolean>();
-		isReady.put(userID1, false);
-		isReady.put(userID2, false);
+		ready = new HashMap<String, Boolean>();
+		ready.put(userID1, false);
+		ready.put(userID2, false);
 	}
 
 	public boolean checkAnswer(String answ, String userID) {
 		boolean right = quiz[currNumbQuest].checkAnswer(answ);
-		if (right && !isReady.get(userID)) {
+		if (right && !ready.get(userID)) {
 			scores.put(userID, scores.get(userID) + earnedScore);
 		}
-		isReady.put(userID, true);
+		ready.put(userID, true);
 		nextQuestion();
-		if (currNumbQuest >= length && getIsReady()) {
+		if (currNumbQuest >= length && isReady()) {
 			isEnd = true;
 		}
 		return right;
 	}
 
 	private void nextQuestion() {
-		for (boolean ready: isReady.values()) {
+		for (boolean ready: ready.values()) {
 			if (!ready) {
 				return;
 			}
@@ -43,8 +43,8 @@ public class Duel extends Quiz {
 		currNumbQuest += 1;
 	}
 
-	public boolean getIsReady() {
-		for (boolean ready: isReady.values()) {
+	public boolean isReady() {
+		for (boolean ready: ready.values()) {
 			if (!ready) {
 				return false;
 			}
@@ -52,18 +52,18 @@ public class Duel extends Quiz {
 		return true;
 	}
 
-	public boolean getIsReady(String userID) {
-		return isReady.get(userID);
+	public boolean isReady(String userID) {
+		return ready.get(userID);
 	}
 
 	public void reset() {
-		for (String userID: isReady.keySet()) {
-			isReady.put(userID, false);
+		for (String userID: ready.keySet()) {
+			ready.put(userID, false);
 		}
 	}
 
 	public String getOpponent(String userID1) {
-		for (String userID: isReady.keySet()) {
+		for (String userID: ready.keySet()) {
 			if (!userID.equals(userID1)) {
 				return userID;
 			}
@@ -72,11 +72,11 @@ public class Duel extends Quiz {
 	}
 
 	public void accept() {
-	    isAccepted = true;
+	    accepted = true;
     }
 
     public boolean isAccepted() {
-        return isAccepted;
+        return accepted;
     }
 
     public String getInviter() {
