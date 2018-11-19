@@ -2,12 +2,14 @@ package main;
 
 import java.io.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
 
 public class Bot {
 
+	static Shop shop = new Shop();
 	static String token;
 	static final String HELLOMESSAGE = "Привет! Я - бот, который поможет тебе выигрывать в викторине \"Клевер\". Чтобы познакомиться с тем, что я умею, вызови команду /help";
 	static final String HELPMESSAGE = "/startquiz - начать викторину с 12 вопросами и 4 вариантами ответа на каждый, за верный ответ начисляются 10 очков \r\n" +
@@ -25,7 +27,7 @@ public class Bot {
             byte[] data = new byte[(int) file.length()];
             fis.read(data);
             fis.close();
-            token = new String(data, "UTF-8");
+            token = new String(data, StandardCharsets.UTF_8);
         } catch (IOException e) {
 	        e.printStackTrace();
         }
@@ -111,7 +113,12 @@ public class Bot {
     }
 
 	public void sendNewQuestion(String userID) {
-		sendMessage(userID, quizes.get(userID).getCurrQuest());
+		Map<String, String> args = new HashMap<String, String>();
+        Quiz quiz = quizes.get(userID);
+		args.put("chat_id", userID);
+		args.put("text", quiz.getCurrQuest());
+		args.put("reply_markup", quiz.getKeyboard());
+		URLRequest("sendMessage", args);
 	}
 
 	public void processMessage(String message, String userData) {
@@ -126,10 +133,8 @@ public class Bot {
 					} else {
 						sendMessage(userID, "Ваши очки: " + Integer.toString(quizes.get(userID).getScore() + base.getScore(userID)));
 					}
-				} else if (base.contains(userID)) {
-					sendMessage(userID, "Ваши очки: " + Integer.toString(base.getScore(userID)));
 				} else {
-					sendMessage(userID, "Вы еще не участвовали в викторине");
+					sendMessage(userID, "Ваши очки: " + Integer.toString(base.getScore(userID)));
 				}
 				break;
 			case "/start":

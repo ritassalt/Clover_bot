@@ -10,7 +10,8 @@ import java.util.Random;
 
 public class Quiz
 {
-	protected int score;
+	private int score;
+	private int combo;
 	protected static List<Question> questions = makeQuestions();
 	protected Question[] quiz;
 	protected int currNumbQuest;
@@ -22,6 +23,7 @@ public class Quiz
 		length = len;
 		quiz = makeQuiz();
 		currNumbQuest = 0;
+		combo = 0;
 	}
 	
 	private static List<Question> makeQuestions() {
@@ -60,7 +62,10 @@ public class Quiz
 	public boolean checkAnswer(String answ) {
 		boolean right = quiz[currNumbQuest].checkAnswer(answ);
 		if (right) {
-			score += earnedScore;
+			combo += 1;
+			score += earnedScore * combo;
+		} else {
+			combo = 0;
 		}
 		nextQuestion();
 		if (currNumbQuest >= length) {
@@ -69,23 +74,17 @@ public class Quiz
 		return right;		
 	}
 	
-	private void nextQuestion() {
-		currNumbQuest += 1;
-	}
+	private void nextQuestion() { currNumbQuest += 1; }
 	
 	public String getCurrQuest() {
-		return Integer.toString(currNumbQuest + 1) + ". " + quiz[currNumbQuest].getCurrQuest();
+	    return Integer.toString(currNumbQuest + 1) + ". " + quiz[currNumbQuest].getCurrQuest();
 	}
+
+	public int getScore() { return score; }
+
+	public String getKeyboard() { return quiz[currNumbQuest].getKeyboard(); }
 	
-	public int getScore() {
-		return score;
-	}
+	public String getAnswer() { return quiz[currNumbQuest].getAnswer();	}
 	
-	public String getAnswer() {
-		return quiz[currNumbQuest].getAnswer();
-	}
-	
-	public boolean isEnd() {
-		return isEnd;
-	}
+	public boolean isEnd() { return isEnd; }
 }

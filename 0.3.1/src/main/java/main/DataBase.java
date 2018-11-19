@@ -40,9 +40,7 @@ public class DataBase {
 		}
 	}
 	
-	public boolean contains(String userID) {
-		return usersData.containsKey(userID);
-	}
+	public boolean contains(String userID) { return usersData.containsKey(userID); }
 	
 	public String find(String username) {
 		for (UserDataObject dataObj: usersData.values()) {
@@ -53,13 +51,11 @@ public class DataBase {
 		return null;
 	}
 
-	public String getUsername(String userID) {
-		return usersData.get(userID).getUsername();
-	}
+	public UserDataObject getUserData(String userID) { return usersData.get(userID); }
+
+	public String getUsername(String userID) { return usersData.get(userID).getUsername(); }
 	
-	public void addScores(String userID, int score) {
-		usersData.get(userID).addScore(score);
-	}
+	public void addScores(String userID, int score) { usersData.get(userID).addScore(score); }
 	
 	public void Save() {
 		try (FileWriter writer = new FileWriter("src\\" + path, false)) {
@@ -80,7 +76,5 @@ public class DataBase {
         }			
 	}
 	
-	public int getScore(String userID) {
-		return usersData.get(userID).getScores();
-	}
+	public int getScore(String userID) { return usersData.get(userID).getScores(); }
 }

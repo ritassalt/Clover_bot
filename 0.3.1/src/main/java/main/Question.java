@@ -1,6 +1,7 @@
 package main;
 
 import java.util.Random;
+import com.google.gson.Gson;
 
 public final class Question {
 
@@ -8,6 +9,8 @@ public final class Question {
 	private String[] answers;
 	private String rightAnswer;
 	private String rightAnswerNumber;
+	private String keyboard;
+	private Gson gson = new Gson();
 
 	public Question(String line) {
 		String[] questWithAnswers = line.split("#");
@@ -20,6 +23,7 @@ public final class Question {
 				break;
 			}
 		}
+		keyboard = gson.toJson(new ReplyKeyboardMarkup(answers));
 	}
 
 	public static String[] shuffleAnswers(String answer) {
@@ -34,10 +38,7 @@ public final class Question {
 		return answers;
 	}
 
-	public String getAnswer() {
-		return rightAnswer;
-	}
-
+	public String getAnswer() { return rightAnswer; }
 
 	public String getCurrQuest() {
 		StringBuilder questWithAnswers = new StringBuilder();
@@ -52,6 +53,8 @@ public final class Question {
 		return rightAnswerNumber.equals(answer) ||
 				answer.toLowerCase().equals(rightAnswer.toLowerCase()) ;
 	}
+
+	public String getKeyboard() { return keyboard; }
 
 	@Override
 	public boolean equals(Object o) {
