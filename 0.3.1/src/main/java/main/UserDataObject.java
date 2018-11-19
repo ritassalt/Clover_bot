@@ -13,6 +13,8 @@ public class UserDataObject {
 		this.userID = userID;
 		this.username = username;
 		this.scores = scores;
+		bonuses = new HashMap<String, Integer>();
+		bonuses.put("extraLife", 0);
 	}
 	
 	public void addScore(int score) { scores += score; }

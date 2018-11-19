@@ -157,8 +157,19 @@ public class Bot {
             case "/no":
                 declineInviteOnDuel(userID);
                 break;
+            case "/buy":
+                if (command.length > 1) {
+                    buy(userID, command[1]);
+                } else {
+                    buy(userID, "");
+                }
+                break;
 			case "/duel":
-				inviteOnDuel(userID, command[1]);
+			    if (command.length > 1) {
+                    inviteOnDuel(userID, command[1]);
+                } else {
+                    sendMessage(userID, "Invalid command");
+                }
 				break;
 			default:
 				if (quizes.containsKey(userID) && !quizes.get(userID).isEnd()) {
@@ -265,6 +276,14 @@ public class Bot {
             sendMessage(userID, "К сожалению, вы ошиблись");
             sendMessage(userID, "Правильный ответ: " + answer);
         }
+    }
+
+    public void buy(String userID, String item) {
+        if (item.equals("")) {
+            sendMessage(userID, "Магвзин");
+            return;
+        }
+        sendMessage(userID, shop.buy(base.getUserData(userID), item));
     }
 
 	public String decodeString(String s) {
