@@ -10,7 +10,7 @@ public class Shop {
     private void fillShop() {
         if (items == null) {
             items = new HashMap<String, Integer>();
-            items.put("extraLife", 200);
+            items.put("extralife", 200);
         }
     }
 

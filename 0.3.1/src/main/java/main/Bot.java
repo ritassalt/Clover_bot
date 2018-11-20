@@ -12,12 +12,16 @@ public class Bot {
 	static Shop shop = new Shop();
 	static String token;
 	static final String HELLOMESSAGE = "Привет! Я - бот, который поможет тебе выигрывать в викторине \"Клевер\". Чтобы познакомиться с тем, что я умею, вызови команду /help";
-	static final String HELPMESSAGE = "/startquiz - начать викторину с 12 вопросами и 4 вариантами ответа на каждый, за верный ответ начисляются 10 очков \r\n" +
+	static final String HELPMESSAGE = "/startquiz - начать викторину с 12 вопросами и 4 вариантами ответа на каждый, за верный ответ начисляются 10 очков, умножаемые на комбо\r\n" +
 			"/showscore - показать набранные очки за прошлую или текущую игру\r\n" +
 			"/start - показать приветственное сообщение\r\n" +
 			"/help - показать эту справку\r\n" +
-			"/duel username - начать дуэль с пользователем @username";
-	private Map<String, Quiz> quizes;
+			"/duel username - начать дуэль с пользователем @username\r\n" +
+            "/buy item - купить определенный бонус за имеющиеся очки (/helpshop - справка по магазину)";
+    static final String SHOPMESSAGE = "Для покупки бонуса введите команду /buy и название бонуса.\r\n" +
+            "В наличии:\r\n" +
+            "extralife (200 очков) - возможность один раз за игру сохранить уровень комбо-очков при неверном ответе";
+    private Map<String, Quiz> quizes;
 	private DataBase base = new DataBase("data.txt");
 
 	public Bot() {
@@ -143,6 +147,9 @@ public class Bot {
 			case "/help":
 				sendMessage(userID, HELPMESSAGE);
 				break;
+			case "/helpshop":
+                sendMessage(userID, SHOPMESSAGE);
+                break;
 			case "/startquiz":
 				if (isNotActive(userID)) {
 					sendMessage(userID, "Начнём!");
@@ -168,7 +175,7 @@ public class Bot {
 			    if (command.length > 1) {
                     inviteOnDuel(userID, command[1]);
                 } else {
-                    sendMessage(userID, "Invalid command");
+                    sendMessage(userID, "Необходимо указать username оппонента!");
                 }
 				break;
 			default:
@@ -280,7 +287,7 @@ public class Bot {
 
     public void buy(String userID, String item) {
         if (item.equals("")) {
-            sendMessage(userID, "Магвзин");
+            sendMessage(userID, "Указывайте название товара в команде (/helpshop для справки)");
             return;
         }
         sendMessage(userID, shop.buy(base.getUserData(userID), item));
