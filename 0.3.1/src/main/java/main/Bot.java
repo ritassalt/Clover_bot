@@ -3,50 +3,62 @@ package main;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.io.File;
+import java.io.FileWriter;
+import com.google.gson.Gson;
 
 
 public class Bot {
 
-	static Shop shop = new Shop();
-	static String token;
-	static final String HELLOMESSAGE = "Привет! Я - бот, который поможет тебе выигрывать в викторине \"Клевер\". Чтобы познакомиться с тем, что я умею, вызови команду /help";
-	static final String HELPMESSAGE = "/startquiz - начать викторину с 12 вопросами и 4 вариантами ответа на каждый, за верный ответ начисляются 10 очков, умножаемые на комбо\r\n" +
-			"/showscore - показать набранные очки за прошлую или текущую игру\r\n" +
+	private static Shop shop = new Shop();
+	private static String token;
+	public static final String HELLOMESSAGE = "Привет! Я - бот, который поможет тебе выигрывать в викторине \"Клевер\". Чтобы познакомиться с тем, что я умею, вызови команду /help";
+	public static final String HELPMESSAGE = "/startquiz - начать викторину с 12 вопросами и 4 вариантами ответа на каждый, за верный ответ начисляются 10 очков, умножаемые на комбо\r\n" +
+			"/showscore - показать очки и кол-во дополнительных жизней\r\n" +
 			"/start - показать приветственное сообщение\r\n" +
 			"/help - показать эту справку\r\n" +
 			"/duel username - начать дуэль с пользователем @username\r\n" +
             "/buy item - купить определенный бонус за имеющиеся очки (/helpshop - справка по магазину)";
-    static final String SHOPMESSAGE = "Для покупки бонуса введите команду /buy и название бонуса.\r\n" +
+    public static final String SHOPMESSAGE = "Для покупки бонуса введите команду /buy и название бонуса.\r\n" +
             "В наличии:\r\n" +
             "extralife (200 очков) - возможность один раз за игру сохранить уровень комбо-очков при неверном ответе";
     private Map<String, Quiz> quizes;
+    private static String keyboard;
 	private DataBase base = new DataBase("data.txt");
 
 	public Bot() {
 	    try {
+            quizes = new HashMap<String, Quiz>();
             File file = new File("src\\token.txt");
             FileInputStream fis = new FileInputStream(file);
             byte[] data = new byte[(int) file.length()];
             fis.read(data);
             fis.close();
             token = new String(data, StandardCharsets.UTF_8);
+            loadQuizes();
         } catch (IOException e) {
 	        e.printStackTrace();
         }
-        quizes = new HashMap<String, Quiz>();
+        Gson gson = new Gson();
+	    keyboard = gson.toJson(new ReplyKeyboardMarkup(), ReplyKeyboardMarkup.class);
 	}
 
 	public void sendMessage(String chatID, String message) {
 		Map<String, String> args = new HashMap<String, String>();
 		args.put("chat_id", chatID);
 		args.put("text", message);
+		if (isNotActive(chatID)){
+		    args.put("reply_markup", "{\"remove_keyboard\": true}");
+        }
 		URLRequest("sendMessage", args);
 	}
 
 	public void startQuiz(String userID) {
-		quizes.put(userID, new Quiz(12));
+		quizes.put(userID, new Quiz(userID, 12));
 		sendNewQuestion(userID);
 	}
 
@@ -121,7 +133,7 @@ public class Bot {
         Quiz quiz = quizes.get(userID);
 		args.put("chat_id", userID);
 		args.put("text", quiz.getCurrQuest());
-		args.put("reply_markup", quiz.getKeyboard());
+		args.put("reply_markup", keyboard);
 		URLRequest("sendMessage", args);
 	}
 
@@ -140,6 +152,7 @@ public class Bot {
 				} else {
 					sendMessage(userID, "Ваши очки: " + Integer.toString(base.getScore(userID)));
 				}
+				sendMessage(userID, "Ваши жизни: " + base.getUserData(userID).getBonusCount("extralife"));
 				break;
 			case "/start":
 				sendMessage(userID, HELLOMESSAGE);
@@ -171,6 +184,9 @@ public class Bot {
                     buy(userID, "");
                 }
                 break;
+            case "/extralife":
+                activateExtraLife(userID);
+                break;
 			case "/duel":
 			    if (command.length > 1) {
                     inviteOnDuel(userID, command[1]);
@@ -201,10 +217,10 @@ public class Bot {
 	}
 
 	private boolean isNotActive(String userID) {
-		return !quizes.containsKey(userID) || quizes.get(userID).isEnd;
+		return !quizes.containsKey(userID) || quizes.get(userID).end;
 	}
 
-	private void processData(String userData) {
+	public void processData(String userData) {
 		String[] data = userData.split(":");
 		if (base.contains(data[0])) {
 			return;
@@ -291,6 +307,80 @@ public class Bot {
             return;
         }
         sendMessage(userID, shop.buy(base.getUserData(userID), item));
+    }
+
+    private void activateExtraLife(String userID) {
+	    if (base.getUserData(userID).getBonusCount("extralife") == 0) {
+	        sendMessage(userID, "На вашем счету нет дополнительных жизней!");
+	        return;
+        }
+        if (isNotActive(userID)) {
+        	sendMessage(userID, "Нельзя активировать жизнь до начала викторины");
+        	return;
+		}
+        Quiz quiz = quizes.get(userID);
+	    if (quiz instanceof Duel && !((Duel)quiz).isExtraLifeActive(userID) || !quiz.isExtraLifeActive()) {
+	        if (quiz instanceof Duel) {
+                if (((Duel)quiz).isAccepted()) {
+                    ((Duel) quiz).activateExtraLife(userID);
+                } else {
+                    sendMessage(userID, "Нельзя активировать жизнь до начала дуэли");
+                }
+            } else {
+                quiz.activateExtraLife();
+            }
+            sendMessage(userID, "Дополнительная жизнь активирована!");
+        } else {
+	        sendMessage(userID, "Дополнительная жизнь уже активирована");
+        }
+    }
+
+    public void saveQuizes() {
+	    File save = new File("src\\save.txt");
+	    Gson gson = new Gson();
+	    try {
+            save.createNewFile();
+            FileWriter writer = new FileWriter(save);
+            for (Quiz quiz: quizes.values()) {
+                if (quiz != null) {
+                    if (quiz instanceof Duel) {
+                        writer.write("Duel@" + gson.toJson(quiz) + "#");
+                    } else {
+                        writer.write("Quiz@" + gson.toJson(quiz) + "#");
+                    }
+                }
+            }
+            writer.close();
+        } catch (IOException e) {
+	        e.printStackTrace();
+        }
+    }
+
+    private void loadQuizes() {
+	    File save = new File("src\\save.txt");
+	    Gson gson = new Gson();
+	    if (save.exists()) {
+	        try {
+                String data = new String(Files.readAllBytes(Paths.get("src\\save.txt")), StandardCharsets.UTF_8);
+                String[] json_quizes = data.split("#");
+                for (String json_quiz: json_quizes) {
+                    if (!json_quiz.equals("")) {
+                        String[] quiz_data = json_quiz.split("@");
+                        if (quiz_data[0].equals("Quiz")) {
+                            Quiz quiz = gson.fromJson(quiz_data[1], Quiz.class);
+                            quizes.put(quiz.getUserID(), quiz);
+                        } else {
+                            Duel duel = gson.fromJson(quiz_data[1], Duel.class);
+                            quizes.put(duel.getInviter(), (Quiz) duel);
+                            quizes.put(duel.getOpponent(duel.getInviter()), (Quiz) duel);
+                        }
+                    }
+                }
+                save.delete();
+            } catch (IOException e) {
+	            e.printStackTrace();
+            }
+        }
     }
 
 	public String decodeString(String s) {

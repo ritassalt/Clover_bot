@@ -22,7 +22,7 @@ public class Shop {
         if (user.getScores() < price) {
             return "Недостаточно очков для совершения покупки!";
         }
-        user.updateBonuses(item, user.getBonusCount(item) + 1, price);
+        user.updateBonuses(item, price);
         return "Покупка совершена!";
     }
 }

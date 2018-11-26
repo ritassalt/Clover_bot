@@ -49,4 +49,10 @@ public class DataBaseTest {
         String content2 = Files.lines(Paths.get("src\\test\\testData.txt")).toString();
         assertNotEquals(content1, content2);
     }
+
+    @Test
+    public void testGetUserData() {
+        UserDataObject user = base.getUserData("123");
+        assertEquals("123", user.getUserID());
+    }
 }

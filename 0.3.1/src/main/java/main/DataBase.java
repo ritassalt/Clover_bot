@@ -25,17 +25,17 @@ public class DataBase {
 		for (String line: lines) {
 				if (!line.equals("")) {
 					String[] words = line.split(":");
-					usersData.put(words[0], new UserDataObject(words[0], words[1], Integer.parseInt(words[2])));
+					usersData.put(words[0], new UserDataObject(words[0], words[1], Integer.parseInt(words[2]), Integer.parseInt(words[3])));
 			}
 		}
 	}
 	
 	public void addNewUser(String[] data) {
 		if (data.length == 2) {
-		    usersData.put(data[0], new UserDataObject(data[0], data[1], 0));
+		    usersData.put(data[0], new UserDataObject(data[0], data[1], 0, 0));
 		    Save(data[0]);
 		} else if (data.length == 1) {
-		    usersData.put(data[0], new UserDataObject(data[0], "", 0));
+		    usersData.put(data[0], new UserDataObject(data[0], "", 0, 0));
 		    Save(data[0]);
 		}
 	}
@@ -61,16 +61,18 @@ public class DataBase {
 		try (FileWriter writer = new FileWriter("src\\" + path, false)) {
 			for (UserDataObject line : usersData.values()) {
 				writer.write(line.getUserID() + ':' + line.getUsername() + ':' + 
-						Integer.toString(line.getScores()) + '\n');
+						Integer.toString(line.getScores()) + ":" + line.getBonusCount("extralife") + '\n');
 			}			
         } catch (IOException ex) {             
             System.out.println(ex.getMessage());
         }			
 	}
 	public void Save(String userID) {
+	    UserDataObject data = usersData.get(userID);
 		try (FileWriter writer = new FileWriter("src\\" + path, true)) {
-			writer.write(userID + ":" + usersData.get(userID).getUsername() + ":" +
-					Integer.toString(usersData.get(userID).getScores()) + "\n");
+			writer.write(userID + ":" + data.getUsername() + ":" +
+					Integer.toString(data.getScores()) + ":" +
+					Integer.toString(data.getBonusCount("extralife")) + "\n");
         } catch (IOException ex) {             
             System.out.println(ex.getMessage());
         }			

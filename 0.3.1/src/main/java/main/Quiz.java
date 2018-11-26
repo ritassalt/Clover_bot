@@ -12,14 +12,17 @@ public class Quiz
 {
 	private int score;
 	private int combo;
+	private String userID;
 	protected static List<Question> questions = makeQuestions();
-	protected Question[] quiz;
+	protected int[] quiz;
 	protected int currNumbQuest;
 	protected int length;
 	protected int earnedScore = 10;
-	protected boolean isEnd = false;
+	protected boolean end = false;
+	private boolean extraLife = false;
 
-	public Quiz(int len) {
+	public Quiz(String userID, int len) {
+		this.userID = userID;
 		length = len;
 		quiz = makeQuiz();
 		currNumbQuest = 0;
@@ -28,9 +31,11 @@ public class Quiz
 	
 	private static List<Question> makeQuestions() {
 		List<Question> temp = new ArrayList<Question>();
+		int k = 0;
 		try {
+		    k++;
 			for (String line : Files.readAllLines(Paths.get("src\\questions.txt"), StandardCharsets.UTF_8)) {
-				temp.add(new Question(line));
+				temp.add(new Question(line, k));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -38,21 +43,20 @@ public class Quiz
 		return temp;
 	}
 	
-	public Question[] makeQuiz() {
+	public int[] makeQuiz() {
 		Random rnd = new Random();
-		quiz = new Question[length];
+		quiz = new int[length];
 		for (int i = 0; i < length; i++) {
-			while (quiz[i] == null) {				
+			while (quiz[i] == 0) {
 				int number = rnd.nextInt(questions.size());
 				boolean exist = false;
-				for (Question question : quiz) {
-					Question anotherQuestion = questions.get(number);
-					if (anotherQuestion.equals(question)) {
+				for (int num : quiz) {
+					if (num == number) {
 						exist = true;
 					}
 				}
 				if (!exist) {
-					quiz[i] = questions.get(number);
+					quiz[i] = number;
 				}
 			}	
 		}
@@ -60,16 +64,17 @@ public class Quiz
 	}
 	
 	public boolean checkAnswer(String answ) {
-		boolean right = quiz[currNumbQuest].checkAnswer(answ);
+		boolean right = questions.get(quiz[currNumbQuest]).checkAnswer(answ);
 		if (right) {
 			combo += 1;
 			score += earnedScore * combo;
-		} else {
+		} else if (!extraLife) {
 			combo = 0;
 		}
+		extraLife = false;
 		nextQuestion();
 		if (currNumbQuest >= length) {
-			isEnd = true;
+			end = true;
 		}
 		return right;		
 	}
@@ -77,14 +82,18 @@ public class Quiz
 	private void nextQuestion() { currNumbQuest += 1; }
 	
 	public String getCurrQuest() {
-	    return Integer.toString(currNumbQuest + 1) + ". " + quiz[currNumbQuest].getCurrQuest();
+	    return Integer.toString(currNumbQuest + 1) + ". " + questions.get(quiz[currNumbQuest]).getCurrQuest();
 	}
 
 	public int getScore() { return score; }
 
-	public String getKeyboard() { return quiz[currNumbQuest].getKeyboard(); }
+    public String getUserID() { return userID; }
+
+	public String getAnswer() { return questions.get(quiz[currNumbQuest]).getAnswer();	}
 	
-	public String getAnswer() { return quiz[currNumbQuest].getAnswer();	}
-	
-	public boolean isEnd() { return isEnd; }
+	public boolean isEnd() { return end; }
+
+	public void activateExtraLife() { extraLife = true; }
+
+	public boolean isExtraLifeActive() { return extraLife; }
 }

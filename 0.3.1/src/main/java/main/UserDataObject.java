@@ -9,12 +9,12 @@ public class UserDataObject {
 	private int scores;
 	private HashMap<String, Integer> bonuses;
 	
-	public UserDataObject(String userID, String username, int scores) {
+	public UserDataObject(String userID, String username, int scores, int lifesCount) {
 		this.userID = userID;
 		this.username = username;
 		this.scores = scores;
 		bonuses = new HashMap<String, Integer>();
-		bonuses.put("extraLife", 0);
+		bonuses.put("extralife", lifesCount);
 	}
 	
 	public void addScore(int score) { scores += score; }
@@ -25,8 +25,8 @@ public class UserDataObject {
 	
 	public int getScores() { return scores;	}
 
-	public void updateBonuses(String name, Integer value, Integer price) {
-		bonuses.put(name, value);
+	public void updateBonuses(String name, Integer price) {
+		bonuses.put(name, bonuses.get(name) + 1);
 		scores -= price;
 	}
 
