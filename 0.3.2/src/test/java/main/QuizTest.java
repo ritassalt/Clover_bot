@@ -11,20 +11,20 @@ import static org.junit.jupiter.api.Assertions.*;
 public class QuizTest {
 	private Quiz quiz = null;
 	@BeforeEach
-    public void init() { quiz = new Quiz(12); }
+    public void init() { quiz = new Quiz("123", 12); }
     @AfterEach
     public void tearDown() { quiz = null; }
 
 	@Test
 	public void testMakeQuiz1() {
-		Question[] questions = quiz.makeQuiz();
+		int[] questions = quiz.makeQuiz();
         assertEquals(12, questions.length);
 	}
 	
 	@Test
 	public void testMakeQuiz2() {
-		Question[] questions = quiz.makeQuiz();
-		for (Question q: questions)	{
+		int[] questions = quiz.makeQuiz();
+		for (int q: questions)	{
 			assertNotNull(q);
 		}
 	}
@@ -65,8 +65,29 @@ public class QuizTest {
 	}
 	
 	@Test
-	public void TestCheckAnswer() {
+	public void testCheckAnswer() {
 		String answer = quiz.getAnswer();
 		assertTrue(quiz.checkAnswer(answer));
 	}
+
+	@Test
+    public void testUserID() {
+	    assertEquals("123", quiz.getUserID());
+    }
+
+    @Test
+    public void testExtraLifeActivation() {
+	    quiz.activateExtraLife();
+	    assertTrue(quiz.isExtraLifeActive());
+    }
+
+    @Test
+    public void testQuestionNumber() {
+	    Question question1 = new Question("quest#a,b,c,d#a", 1);
+        Question question2 = new Question("quest#a,b,c,d#a", 1);
+        assertEquals(1, question1.getNumber());
+        assertEquals(question1, question2);
+        assertEquals(question1, question1);
+        assertNotEquals(question1, null);
+    }
 }
