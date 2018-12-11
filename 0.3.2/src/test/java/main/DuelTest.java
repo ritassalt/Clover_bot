@@ -71,4 +71,10 @@ public class DuelTest {
     public void testGetInviter() {
         assertEquals(duel.getInviter(), "123");
     }
+
+    @Test
+    public void testExtraLifeActivation() {
+        duel.activateExtraLife("123");
+        assertTrue(duel.isExtraLifeActive("123"));
+    }
 }

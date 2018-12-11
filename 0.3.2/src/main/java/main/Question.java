@@ -8,9 +8,11 @@ public final class Question {
 	private String[] answers;
 	private String rightAnswer;
 	private String rightAnswerNumber;
+	private int number;
 
-	public Question(String line) {
+	public Question(String line, int number) {
 		String[] questWithAnswers = line.split("#");
+		this.number = number;
 		question = questWithAnswers[0];
 		rightAnswer = questWithAnswers[2];
 		answers = shuffleAnswers(questWithAnswers[1]);
@@ -34,10 +36,7 @@ public final class Question {
 		return answers;
 	}
 
-	public String getAnswer() {
-		return rightAnswer;
-	}
-
+	public String getAnswer() { return rightAnswer; }
 
 	public String getCurrQuest() {
 		StringBuilder questWithAnswers = new StringBuilder();
@@ -53,6 +52,10 @@ public final class Question {
 				answer.toLowerCase().equals(rightAnswer.toLowerCase()) ;
 	}
 
+	public int getNumber() {
+		return number;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
@@ -62,7 +65,7 @@ public final class Question {
 			return false;
 		}
 		Question q = (Question) o;
-		return this.getAnswer().equals(q.getAnswer());
+		return this.getNumber() == q.getNumber();
 	}
 	//TODO: getHashCode
 }

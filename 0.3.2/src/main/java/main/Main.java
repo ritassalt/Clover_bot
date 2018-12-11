@@ -10,12 +10,16 @@ public class Main
 	
 	public static void main(String[] args) {
 		Bot bot = new Bot();
-		while (true) {
-			Map<String, String> messages = processData(bot.getUpdates(Offset));
-			for (String key: messages.keySet())	{
-				bot.processMessage(messages.get(key), key);
-			}
-		}
+		try {
+            while (true) {
+                Map<String, String> messages = processData(bot.getUpdates(Offset));
+                for (String key : messages.keySet()) {
+                    bot.processMessage(messages.get(key), key);
+                }
+            }
+        } finally {
+		    bot.saveQuizes();
+        }
 	}
 	
 	public static Map<String, String> processData(String data) {
